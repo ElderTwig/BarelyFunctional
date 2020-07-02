@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.15)
 cmake_policy(SET CMP0091 NEW)
 
-project(PROJECT_NAME LANGUAGES CXX)
+project(BarelyFunctional LANGUAGES CXX)
 
 if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
     set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
@@ -21,10 +21,6 @@ endif()
 option(CLANG_TIDY "Run clang-tidy on MandelLandscape" OFF)
 option(BUILD_TESTING OFF)
 option(BUILD_SHARED_LIBS OFF)
-
-set(APP_NAME "App")
-
-message("App name is: ${APP_NAME}")
 
 #---------------------------Compilation database generation--------------------
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
