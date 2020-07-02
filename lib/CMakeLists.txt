@@ -1,7 +1,7 @@
 add_library(BarelyFunctional_lib INTERFACE)
     
 target_include_directories(BarelyFunctional_lib
-    INTERFACE ${PROJECT_SOURCE_DIR}/include)
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(BarelyFunctional_lib)
 
