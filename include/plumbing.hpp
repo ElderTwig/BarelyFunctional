@@ -14,33 +14,47 @@ struct Inv : Invocable {
     using Invocable::operator();
 };
 
-struct Entry {
-    template<class Invocable>
+template<class Return, class... Args>
+struct Inv<Return (*)(Args...)> {
+    Return (*invocable)(Args...);
+
     constexpr auto
-    operator>(Invocable invocable) const noexcept
+    operator()(Args... args) const noexcept -> Return
     {
-        return Inv<Invocable>{invocable};
+        return invocable(std::forward<Args>(args)...);
     }
 };
+
+template<class Invocable>
+Inv(Invocable) -> Inv<Invocable>;
 
 template<class OldInvocable, class Invocable>
 constexpr auto
 operator>(Inv<OldInvocable> oldInvocable, Invocable invocable) noexcept
 {
-    auto constexpr newInvocable = [=](auto&&... args) {
+    return Inv{[=](auto&&... args) {
         return invocable(oldInvocable(std::forward<decltype(args)>(args)...));
-    };
-
-    return Inv<decltype(newInvocable)>{newInvocable};
+    }};
 }
 
 template<class... Ts, class Visitor>
 constexpr auto
-unwrap(std::variant<Ts...>&& variant, Visitor&& visitor) noexcept
+unwrap(std::variant<Ts...>&& variant, Visitor visitor) noexcept
 {
-    return std::visit(
-            std::forward<Visitor>(visitor),
-            std::forward<std::variant<Ts...>>(variant));
+    using ReturnType = std::tuple_element_t<0, std::tuple<Ts...>>;
+
+    if constexpr((std::is_same_v<
+                          ReturnType,
+                          std::invoke_result_t<Visitor, Ts>> && ...)) {
+        return std::visit(visitor, std::forward<std::variant<Ts...>>(variant));
+    }
+    else {
+        return std::visit(
+                [=](auto&& value) -> std::variant<Ts...> {
+                    return visitor(std::forward<decltype(value)>(value));
+                },
+                std::forward<std::variant<Ts...>>(variant));
+    }
 }
 
 template<class... Ts, class Function>
@@ -78,14 +92,37 @@ template<class OldInvocable, class Invocable>
 constexpr auto
 operator>=(Inv<OldInvocable> oldInvocable, Invocable invocable) noexcept
 {
-    auto constexpr newInvocable = [=](auto&& arg) {
+    return Inv{[=](auto&&... arg) {
         return unwrap(
-                oldInvocable(std::forward<decltype(arg)>(arg)),
+                oldInvocable(std::forward<decltype(arg)>(arg)...),
                 invocable);
-    };
-
-    return Inv<decltype(newInvocable)>{newInvocable};
+    }};
 }
+
+struct Expr {
+    template<class Invocable>
+    constexpr auto
+    operator>(Invocable invocable)
+    {
+        return Inv{invocable};
+    }
+};
+
+template<class... Types>
+struct Pack {
+    std::tuple<Types...> pack;
+
+    constexpr Pack(Types&&... types) noexcept :
+                pack{std::forward<Types>(types)...}
+    {}
+
+    template<class Invocable>
+    constexpr auto
+    operator|(Invocable&& invocable)
+    {
+        return std::apply(std::move(invocable), std::move(pack));
+    }
+};
 
 }    // namespace Barely
 

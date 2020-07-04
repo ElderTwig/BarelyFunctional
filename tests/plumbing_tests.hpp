@@ -5,6 +5,7 @@
 
 #include <catch2/catch.hpp>
 
+#include <optional>
 #include <type_traits>
 #include <iostream>
 #include <typeinfo>
@@ -42,60 +43,27 @@ struct Diag {
 
 TEST_CASE("", "")
 {
-    /*
-    auto constexpr cal = Barely::Entry() > [](int a) {
-        return a;    // 1
-    } > [](int a) {
-        return a;    // 1
-    } > [](int a) {
-        return a;    // 1
+    using V = std::variant<int, double, Diag>;
+
+    auto const option = Barely::Expr() > [](V&& v) {
+        std::cout << typeid(decltype(v)).name() << "\n\n";
+
+        return std::move(v);
+    } >= [](auto a) -> V {
+        std::cout << typeid(decltype(a)).name() << "\n\n";
+
+        return a;
+    } >= [](auto a) -> V {
+        std::cout << typeid(decltype(a)).name() << "\n\n";
+
+        return a;
+    } >= [](auto a) -> V {
+        std::cout << typeid(decltype(a)).name() << "\n\n";
+
+        return a;
     };
 
-    cal(1);
-
-    auto constexpr bb = [](auto&& a) {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return std::tuple<
-                std::variant<int, double, Diag>,
-                std::variant<int, double, Diag>>{
-                std::forward<decltype(a)>(a),
-                std::forward<decltype(a)>(a)};
-    };
-
-    auto constexpr cc =
-            Barely::Entry() > [](auto&& a) -> std::variant<int, double, Diag> {
-        return {std::forward<decltype(a)>(a)};
-    } >= bb >= [=](auto&&... a) {
-        (bb(std::forward<decltype(a)>(a)), ...);
-    };
-
-    cc(1);
-    cc(1.0);
-    cc(Diag());
-    */
-
-    auto constexpr option = Barely::Entry() > [](auto&& a) {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return std::optional<Diag>{std::nullopt};
-    } >= [](auto&& a) {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return std::move(a);
-    } > [](auto&& a) {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return std::optional{a};
-    } >= [](auto&& a) {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return 5;
-    };
-
-    auto const o = option(Diag());
-
-    std::cout << o.has_value() << '\n';
+    std::cout << option(Diag()).index() << '\n';
 }
 
 #endif    // BARELYFUNCTIONAL_PLUMBING_TESTS_HPP
