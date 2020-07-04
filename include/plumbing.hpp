@@ -106,6 +106,15 @@ struct Expr {
     {
         return Inv{invocable};
     }
+
+    template<class Invocable>
+    constexpr auto
+    operator>=(Invocable invocable)
+    {
+        return Inv{[=](auto&& value) {
+            return unwrap(std::forward<decltype(value)>(value), invocable);
+        }};
+    }
 };
 
 template<class... Types>

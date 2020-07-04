@@ -41,29 +41,29 @@ struct Diag {
     }
 };
 
+auto
+doStuff()
+{}
+
+auto
+doOtherStuff()
+{}
+
 TEST_CASE("", "")
 {
-    using V = std::variant<int, double, Diag>;
+    struct Close {};
+    struct Forward {};
 
-    auto const option = Barely::Expr() > [](V&& v) {
-        std::cout << typeid(decltype(v)).name() << "\n\n";
+    using Actions = std::variant<Close, Forward>;
 
-        return std::move(v);
-    } >= [](auto a) -> V {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return a;
-    } >= [](auto a) -> V {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return a;
-    } >= [](auto a) -> V {
-        std::cout << typeid(decltype(a)).name() << "\n\n";
-
-        return a;
+    auto const option = Barely::Expr() >= [](auto a) {
+        if constexpr(std::is_same_v<Close, decltype(a)>) {
+            return doStuff();
+        }
+        else {
+            return doOtherStuff();
+        }
     };
-
-    std::cout << option(Diag()).index() << '\n';
 }
 
 #endif    // BARELYFUNCTIONAL_PLUMBING_TESTS_HPP
