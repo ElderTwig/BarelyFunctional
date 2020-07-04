@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <variant>
 
-namespace BarelyFunctional {
+namespace Barely {
 
 template<class...>
 struct Concat {};
@@ -27,6 +27,6 @@ struct Concat<Compound<Us...>, Compound<Ts...>, Compounds...> {
 template<class... Compounds>
 using Concat_t = typename Concat<Compounds...>::type;
 
-}    // namespace BarelyFunctional
+}    // namespace Barely
 
 #endif    // BARELYFUNCTIONAL_MISC_HPP
