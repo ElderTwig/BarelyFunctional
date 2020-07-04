@@ -1,6 +1,7 @@
 #ifndef BARELYFUNCTIONAL_PLUMBING_HPP
 #define BARELYFUNCTIONAL_PLUMBING_HPP
 
+#include "misc.hpp"
 #include <type_traits>
 #include <variant>
 #include <optional>
@@ -49,6 +50,28 @@ unwrap(std::tuple<Ts...>&& args, Function&& function) noexcept
     return std::apply(
             std::forward<Function>(function),
             std::forward<std::tuple<Ts...>>(args));
+}
+
+template<class T, class Function>
+constexpr auto
+unwrap(std::optional<T>&& option, Function function) noexcept
+{
+    using ReturnT = std::invoke_result_t<Function, T>;
+
+    if constexpr(isOptional<ReturnT>) {
+        if(option.has_value()) {
+            return function(*option);
+        }
+
+        return ReturnT{std::nullopt};
+    }
+    else {
+        if(option.has_value()) {
+            return std::optional<ReturnT>{function(*option)};
+        }
+
+        return std::optional<ReturnT>{std::nullopt};
+    }
 }
 
 template<class OldInvocable, class Invocable>

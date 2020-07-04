@@ -3,6 +3,7 @@
 
 #include <type_traits>
 #include <variant>
+#include <optional>
 
 namespace Barely {
 
@@ -26,6 +27,15 @@ struct Concat<Compound<Us...>, Compound<Ts...>, Compounds...> {
 
 template<class... Compounds>
 using Concat_t = typename Concat<Compounds...>::type;
+
+template<class = void>
+struct IsOptional : std::false_type {};
+
+template<class T>
+struct IsOptional<std::optional<T>> : std::true_type {};
+
+template<class Optional>
+auto constexpr isOptional = IsOptional<Optional>::value;
 
 }    // namespace Barely
 
