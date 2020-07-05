@@ -120,12 +120,6 @@ operator>>=(
     }};    // namespace Barely
 }
 
-auto constexpr Unwrap = [](auto&& value, auto&& rightInvocable) {
-    return unwrap(
-            std::forward<decltype(value)>(value),
-            std::forward<decltype(rightInvocable)>(rightInvocable));
-};
-
 }    // namespace Barely
 
 #endif    // BARELYFUNCTIONAL_PACK_HPP
