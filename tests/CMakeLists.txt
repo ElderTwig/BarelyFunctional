@@ -11,6 +11,21 @@ set_target_properties(tests
 target_link_libraries(tests
     PRIVATE Catch2::Catch2
     PRIVATE Barely::Functional)
+    
+if(CLANG_TIDY)
+set_target_properties(tests PROPERTIES
+    CXX_CLANG_TIDY "clang-tidy;-header-filter=./include")
+endif()
+
+if(MSVC)
+target_compile_options(tests
+    PRIVATE /W4)
+else()
+target_compile_options(tests
+    PRIVATE -Wall
+    PRIVATE -Werror
+    PRIVATE -Wextra)
+endif()
 
 string(CONCAT GCOVR_CALL
     "gcovr -r ${PROJECT_SOURCE_DIR}/lib "
