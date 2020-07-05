@@ -56,7 +56,7 @@ TEST_CASE("", "")
 
     using Actions = std::variant<Close, Forward>;
 
-    auto const option = Barely::Expr() >= [](auto a) {
+    auto const option = Barely::Expr() > [d = Diag()](auto a) {
         if constexpr(std::is_same_v<Close, decltype(a)>) {
             return doStuff();
         }
