@@ -88,7 +88,7 @@ struct End {};
 
 template<class LeftInvocable>
 constexpr auto
-operator|=(LeftInvocable&& leftInvocable, End) noexcept
+operator|(LeftInvocable&& leftInvocable, End) noexcept
 {
     return Inv{std::forward<LeftInvocable>(leftInvocable)};
 }
