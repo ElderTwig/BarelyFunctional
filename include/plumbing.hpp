@@ -12,7 +12,9 @@ namespace Barely {
 
 template<class... Ts, class RightInvocable>
 constexpr auto
-unwrap(std::variant<Ts...>&& variant, RightInvocable&& rightInvocable) noexcept
+unwrapInto(
+        std::variant<Ts...>&& variant,
+        RightInvocable&& rightInvocable) noexcept
 {
     using ReturnType = std::invoke_result_t<
             RightInvocable,
@@ -38,7 +40,7 @@ unwrap(std::variant<Ts...>&& variant, RightInvocable&& rightInvocable) noexcept
 
 template<class... Ts, class RightInvocable>
 constexpr auto
-unwrap(std::tuple<Ts...>&& args, RightInvocable&& rightInvocable) noexcept
+unwrapInto(std::tuple<Ts...>&& args, RightInvocable&& rightInvocable) noexcept
 {
     return std::apply(
             std::forward<RightInvocable>(rightInvocable),
@@ -47,7 +49,7 @@ unwrap(std::tuple<Ts...>&& args, RightInvocable&& rightInvocable) noexcept
 
 template<class T, class RightInvocable>
 constexpr auto
-unwrap(std::optional<T>&& option, RightInvocable&& rightInvocable) noexcept
+unwrapInto(std::optional<T>&& option, RightInvocable&& rightInvocable) noexcept
 {
     using ReturnT = std::invoke_result_t<RightInvocable, T>;
 
@@ -75,7 +77,7 @@ struct Inv : Invocable {
     constexpr auto
     unwrap(Type&& value) const noexcept
     {
-        return Barely::unwrap(std::forward<Type>(value), *this);
+        return unwrapInto(std::forward<Type>(value), *this);
     }
 };
 
@@ -114,7 +116,7 @@ operator>>=(
     return Inv{[leftInvocable  = std::forward<LeftInvocable>(leftInvocable),
                 rightInvocable = std::forward<RightInvocable>(rightInvocable)](
                        auto&&... arg) {
-        return unwrap(
+        return unwrapInto(
                 leftInvocable(std::forward<decltype(arg)>(arg)...),
                 rightInvocable);
     }};    // namespace Barely
