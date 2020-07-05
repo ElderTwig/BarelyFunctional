@@ -41,13 +41,17 @@ struct Diag {
     }
 };
 
-auto
-doStuff()
-{}
+constexpr auto
+doStuff() noexcept
+{
+    return 5.0;
+}
 
-auto
-doOtherStuff()
-{}
+constexpr auto
+doOtherStuff() noexcept
+{
+    return 6.0;
+}
 
 TEST_CASE("", "")
 {
@@ -56,14 +60,17 @@ TEST_CASE("", "")
 
     using Actions = std::variant<Close, Forward>;
 
-    auto const option = Barely::Expr() > [d = Diag()](auto a) {
-        if constexpr(std::is_same_v<Close, decltype(a)>) {
+    auto constexpr a = [](auto&& a) {
+        std::cout << __PRETTY_FUNCTION__;
+        if constexpr(std::is_same_v<Diag, decltype(a)>) {
             return doStuff();
         }
         else {
             return doOtherStuff();
         }
-    };
+    } |= Barely::End{};
+
+    auto const i = a.unwrap(std::optional<Diag>{Diag()});
 }
 
 #endif    // BARELYFUNCTIONAL_PLUMBING_TESTS_HPP

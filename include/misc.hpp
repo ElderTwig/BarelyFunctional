@@ -37,6 +37,15 @@ struct IsOptional<std::optional<T>> : std::true_type {};
 template<class Optional>
 auto constexpr isOptional = IsOptional<Optional>::value;
 
+template<class Overload, class... Args>
+struct VariantFromOverload {
+    using type = std::variant<std::invoke_result_t<Overload, Args>...>;
+};
+
+template<class Overload, class... Args>
+using VariantFromOverload_t =
+        typename VariantFromOverload<Overload, Args...>::type;
+
 }    // namespace Barely
 
 #endif    // BARELYFUNCTIONAL_MISC_HPP
