@@ -2,9 +2,7 @@
 #define BARELYFUNCTIONAL_MISC_HPP
 
 #include <type_traits>
-#include <variant>
 #include <optional>
-#include <tuple>
 
 namespace Barely {
 
@@ -19,12 +17,6 @@ using IsOptional = IsSpecialisationOf<std::optional, T>;
 
 template<class T>
 auto constexpr isOptional = IsOptional<T>::value;
-
-template<class T>
-using IsTuple = IsSpecialisationOf<std::tuple, T>;
-
-template<class T>
-auto constexpr isTuple = IsTuple<T>::value;
 
 }    // namespace Barely
 

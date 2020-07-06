@@ -44,16 +44,6 @@ operator|(
     }};
 }
 
-auto constexpr f = [] {
-    return std::make_tuple(2, 3);
-};
-auto constexpr c = ID{} | Uncurry{[](auto a, auto b) {
-                       return a + b;
-                   }};
-auto constexpr g = ID{f} | c;
-auto constexpr a = c(std::make_tuple(1, 5));
-auto constexpr b = g();
-
 }    // namespace Barely
 
 #endif    // BARELYFUNCTIONAL_UNCURRY_HPP
