@@ -32,25 +32,4 @@ struct Counter {
     ~Counter() = default;
 };
 
-TEST_CASE("Barely::Inv interface", "[Inv]")
-{
-    SECTION("Inv can be constructed by a generic function object")
-    {
-        auto constexpr lambda = [] {
-        };
-
-        struct {
-            constexpr auto
-            operator()()
-            {}
-        } s;
-
-        auto constexpr inv1 = Barely::Inv{lambda};
-        auto constexpr inv2 = Barely::Inv{lambda};
-    }
-
-    SECTION("You can call")
-    {}
-}
-
 #endif    // BARELYFUNCTIONAL_PLUMBING_TESTS_HPP

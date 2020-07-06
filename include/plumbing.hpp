@@ -16,26 +16,9 @@ unwrapInto(
         std::variant<Ts...>&& variant,
         RightInvocable&& rightInvocable) noexcept
 {
-    using ReturnType = std::invoke_result_t<
-            RightInvocable,
-            std::tuple_element_t<0, std::tuple<Ts...>>>;
-
-    if constexpr((std::is_same_v<
-                          ReturnType,
-                          std::invoke_result_t<RightInvocable, Ts>> && ...)) {
-        return std::visit(
-                std::forward<RightInvocable>(rightInvocable),
-                std::forward<std::variant<Ts...>>(variant));
-    }
-    else {
-        return std::visit(
-                [rightInvocable = std::forward<RightInvocable>(rightInvocable)](
-                        auto&& value)
-                        -> VariantFromOverload_t<RightInvocable, Ts...> {
-                    return rightInvocable(std::forward<decltype(value)>(value));
-                },
-                std::forward<std::variant<Ts...>>(variant));
-    }
+    return std::visit(
+            std::forward<RightInvocable>(rightInvocable),
+            std::forward<std::variant<Ts...>>(variant));
 }
 
 template<class... Ts, class RightInvocable>
@@ -70,29 +53,50 @@ unwrapInto(std::optional<T>&& option, RightInvocable&& rightInvocable) noexcept
 }
 
 template<class Invocable>
-struct Inv : Invocable {
+struct ID : Invocable {
     using Invocable::operator();
-
-    template<class Type>
-    constexpr auto
-    unwrap(Type&& value) const noexcept
-    {
-        return unwrapInto(std::forward<Type>(value), *this);
-    }
 };
 
 template<class Invocable>
-Inv(Invocable) -> Inv<Invocable>;
+ID(Invocable) -> ID<Invocable>;
 
-struct End {};
+template<class Invocable>
+struct Map : Invocable {
+    using Invocable::operator();
+};
 
-template<class LeftInvocable>
+template<class Invocable>
+Map(Invocable) -> Map<Invocable>;
+
+template<class LeftInvocable, class RightInvocable>
 constexpr auto
-operator|(LeftInvocable&& leftInvocable, End) noexcept
+operator|(
+        ID<LeftInvocable>&& leftInvocable,
+        RightInvocable&& rightInvocable) noexcept
 {
-    return Inv{std::forward<LeftInvocable>(leftInvocable)};
+    return ID{[rightInvocable = std::forward<RightInvocable>(rightInvocable),
+               leftInvocable  = std::forward<LeftInvocable>(leftInvocable)](
+                      auto&&... args) {
+        return rightInvocable(
+                leftInvocable(std::forward<decltype(args)>(args)...));
+    }};
 }
 
+template<class LeftInvocable, class RightInvocable>
+constexpr auto
+operator|(
+        ID<LeftInvocable>&& leftInvocable,
+        Map<RightInvocable>&& rightInvocable) noexcept
+{
+    return ID{[rightInvocable = std::forward<RightInvocable>(rightInvocable),
+               leftInvocable  = std::forward<LeftInvocable>(leftInvocable)](
+                      auto&&... args) {
+        return map(
+                leftInvocable(std::forward<decltype(args)>(args)...),
+                rightInvocable);
+    }};
+}
+/*
 template<class LeftInvocable, class RightInvocable>
 constexpr auto
 operator|=(
@@ -105,22 +109,7 @@ operator|=(
         return rightInvocable(
                 leftInvocable(std::forward<decltype(args)>(args)...));
     }};
-}
-
-template<class LeftInvocable, class RightInvocable>
-constexpr auto
-operator>>=(
-        LeftInvocable&& leftInvocable,
-        Inv<RightInvocable>&& rightInvocable) noexcept
-{
-    return Inv{[leftInvocable  = std::forward<LeftInvocable>(leftInvocable),
-                rightInvocable = std::forward<RightInvocable>(rightInvocable)](
-                       auto&&... arg) {
-        return unwrapInto(
-                leftInvocable(std::forward<decltype(arg)>(arg)...),
-                rightInvocable);
-    }};    // namespace Barely
-}
+}*/
 
 }    // namespace Barely
 
