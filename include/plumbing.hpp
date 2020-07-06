@@ -2,8 +2,10 @@
 #define BARELYFUNCTIONAL_PLUMBING_HPP
 
 #include "misc.hpp"
+#include "map.hpp"
 
 #include <type_traits>
+#include <utility>
 #include <variant>
 #include <optional>
 #include <tuple>
@@ -91,25 +93,31 @@ operator|(
     return ID{[rightInvocable = std::forward<RightInvocable>(rightInvocable),
                leftInvocable  = std::forward<LeftInvocable>(leftInvocable)](
                       auto&&... args) {
-        return map(
-                leftInvocable(std::forward<decltype(args)>(args)...),
-                rightInvocable);
+        using LeftReturnT =
+                std::invoke_result_t<LeftInvocable, decltype(args)...>;
+
+        if constexpr(isTuple<LeftReturnT>) {
+            return map(
+                    leftInvocable(std::forward<decltype(args)>(args)...),
+                    rightInvocable,
+                    std::make_index_sequence<std::tuple_size_v<
+                            std::remove_reference_t<LeftReturnT>>>{});
+        }
+        else {
+            return map(
+                    leftInvocable(std::forward<decltype(args)>(args)...),
+                    rightInvocable);
+        }
     }};
 }
-/*
-template<class LeftInvocable, class RightInvocable>
-constexpr auto
-operator|=(
-        LeftInvocable&& leftInvocable,
-        Inv<RightInvocable>&& rightInvocable) noexcept
-{
-    return Inv{[rightInvocable = std::forward<RightInvocable>(rightInvocable),
-                leftInvocable  = std::forward<LeftInvocable>(leftInvocable)](
-                       auto&&... args) {
-        return rightInvocable(
-                leftInvocable(std::forward<decltype(args)>(args)...));
-    }};
-}*/
+
+auto constexpr a = ID{[] {
+                       return std::make_tuple(1, 2.0);
+                   }}
+                   | Map{[](auto a) {
+                         return a * 2;
+                     }};
+auto constexpr b = a();
 
 }    // namespace Barely
 

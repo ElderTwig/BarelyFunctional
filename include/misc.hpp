@@ -4,17 +4,27 @@
 #include <type_traits>
 #include <variant>
 #include <optional>
+#include <tuple>
 
 namespace Barely {
 
-template<class = void>
-struct IsOptional : std::false_type {};
+template<template<class...> class Template, class Specialisation>
+struct IsSpecialisationOf : std::false_type {};
+
+template<template<class...> class Template, class... Args>
+struct IsSpecialisationOf<Template, Template<Args...>> : std::true_type {};
 
 template<class T>
-struct IsOptional<std::optional<T>> : std::true_type {};
+using IsOptional = IsSpecialisationOf<std::optional, T>;
 
-template<class Optional>
-auto constexpr isOptional = IsOptional<Optional>::value;
+template<class T>
+auto constexpr isOptional = IsOptional<T>::value;
+
+template<class T>
+using IsTuple = IsSpecialisationOf<std::tuple, T>;
+
+template<class T>
+auto constexpr isTuple = IsTuple<T>::value;
 
 template<class... Invocables>
 struct Overload : Invocables... {
@@ -23,6 +33,9 @@ struct Overload : Invocables... {
 
 template<class... Invocables>
 Overload(Invocables...) -> Overload<Invocables...>;
+
+template<typename T>
+struct Tag {};
 
 }    // namespace Barely
 
