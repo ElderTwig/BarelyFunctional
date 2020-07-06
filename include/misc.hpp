@@ -26,17 +26,6 @@ using IsTuple = IsSpecialisationOf<std::tuple, T>;
 template<class T>
 auto constexpr isTuple = IsTuple<T>::value;
 
-template<class... Invocables>
-struct Overload : Invocables... {
-    using Invocables::operator()...;
-};
-
-template<class... Invocables>
-Overload(Invocables...) -> Overload<Invocables...>;
-
-template<typename T>
-struct Tag {};
-
 }    // namespace Barely
 
 #endif    // BARELYFUNCTIONAL_MISC_HPP

@@ -2,6 +2,7 @@
 #define BARELYFUNCTIONAL_MAP_HPP
 
 #include "misc.hpp"
+#include "plumbing.hpp"
 
 #include <type_traits>
 #include <optional>
@@ -80,6 +81,39 @@ map(std::array<T, length>&& array, Invocable&& invocable)
     }
 
     return newArray;
+}
+
+template<class... Invocables>
+struct Map : Invocables... {
+    using Invocables ::operator()...;
+};
+
+template<class... Invocables>
+Map(Invocables...) -> Map<Invocables...>;
+
+template<class... RightInvs>
+constexpr auto
+operator|(ID<>, Map<RightInvs...>&& rightInvocable) noexcept
+{
+    return ID{[rightInvocable = std::forward<Map<RightInvs...>>(
+                       rightInvocable)](auto&& arg) {
+        return map(std::forward<decltype(arg)>(arg), rightInvocable);
+    }};
+}
+
+template<class... LeftInvs, class... RightInvs>
+constexpr auto
+operator|(
+        ID<LeftInvs...>&& leftInvocable,
+        Map<RightInvs...>&& rightInvocable) noexcept
+{
+    return ID{[rightInvocable = std::forward<Map<RightInvs...>>(rightInvocable),
+               leftInvocable  = std::forward<ID<LeftInvs...>>(leftInvocable)](
+                      auto&&... args) {
+        return map(
+                leftInvocable(std::forward<decltype(args)>(args)...),
+                rightInvocable);
+    }};
 }
 
 }    // namespace Barely
