@@ -15,9 +15,7 @@ struct Counter {
     constexpr Counter(Counter const& c) :
                 copyConstructed(c.copyConstructed + 1),
                 moveConstructed(c.moveConstructed)
-    {
-        copyConstructed++;
-    }
+    {}
 
     constexpr Counter(Counter&& c) :
                 copyConstructed(c.copyConstructed),
@@ -108,10 +106,10 @@ TEST_CASE(
         STATIC_REQUIRE(idFoo(Counter{}).copyConstructed == 0);
         STATIC_REQUIRE(idFoo(Counter{}).moveConstructed == 1);
 
-        STATIC_REQUIRE(idFooBar(Counter{}).copyConstructed == 2);
+        STATIC_REQUIRE(idFooBar(Counter{}).copyConstructed == 1);
         STATIC_REQUIRE(idFooBar(Counter{}).moveConstructed == 2);
 
-        STATIC_REQUIRE(idFooBarBun(Counter{}).copyConstructed == 2);
+        STATIC_REQUIRE(idFooBarBun(Counter{}).copyConstructed == 1);
         STATIC_REQUIRE(idFooBarBun(Counter{}).moveConstructed == 3);
     }
 
