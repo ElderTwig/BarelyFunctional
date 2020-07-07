@@ -5,4 +5,36 @@
 
 #include <catch2/catch.hpp>
 
+#include <type_traits>
+#include <utility>
+
+TEST_CASE(
+        "IsSpecialisationOf and its derivatives",
+        "[IsSpecialisationOf][isSpecialisationOf][IsOptional][isOptional]")
+{
+    struct AType {};
+
+    SECTION("IsSpecialisationOf::value is true if second argument "
+            "is a template specialisation of the first")
+    {
+        STATIC_REQUIRE(Barely::isSpecialisationOf<
+                       std::is_same,
+                       std::is_same<AType, AType>>);
+
+        STATIC_REQUIRE_FALSE(Barely::isSpecialisationOf<
+                             std::invoke_result,
+                             std::is_trivial<AType>>);
+    }
+
+    SECTION("IsOptional::value is true if argument is a "
+            "template specialisation of std::optional")
+    {
+        STATIC_REQUIRE(Barely::isOptional<std::optional<AType>>);
+
+        STATIC_REQUIRE_FALSE(Barely::isOptional<AType>);
+
+        STATIC_REQUIRE_FALSE(Barely::isOptional<std::is_trivial<AType>>);
+    }
+}
+
 #endif    // BARELYFUNCTIONAL_MISC_TESTS_HPP

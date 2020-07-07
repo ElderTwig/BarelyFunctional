@@ -12,11 +12,15 @@ struct IsSpecialisationOf : std::false_type {};
 template<template<class...> class Template, class... Args>
 struct IsSpecialisationOf<Template, Template<Args...>> : std::true_type {};
 
-template<class T>
-using IsOptional = IsSpecialisationOf<std::optional, T>;
+template<template<class...> class Template, class Specialisation>
+auto constexpr isSpecialisationOf =
+        IsSpecialisationOf<Template, Specialisation>::value;
 
-template<class T>
-auto constexpr isOptional = IsOptional<T>::value;
+template<class Optional>
+using IsOptional = IsSpecialisationOf<std::optional, Optional>;
+
+template<class Optional>
+auto constexpr isOptional = IsOptional<Optional>::value;
 
 }    // namespace Barely
 

@@ -11,10 +11,10 @@ set_target_properties(tests
 target_link_libraries(tests
     PRIVATE Catch2::Catch2
     PRIVATE Barely::Functional)
-    
+
 if(CLANG_TIDY)
-set_target_properties(tests PROPERTIES
-    CXX_CLANG_TIDY "clang-tidy;-header-filter=./include")
+    set_target_properties(tests PROPERTIES
+        CXX_CLANG_TIDY "clang-tidy;--use-color")
 endif()
 
 if(MSVC)
@@ -28,14 +28,14 @@ target_compile_options(tests
 endif()
 
 string(CONCAT GCOVR_CALL
-    "gcovr -r ${PROJECT_SOURCE_DIR}/lib "
+    "gcovr -r ${PROJECT_SOURCE_DIR}/include "
     "--object-directory ${PROJECT_BINARY_DIR}")
 
 if(GCOVR_GEN_HTML)
     file(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/coverage)
 
     string(CONCAT GEN_HTML
-        "gcovr -r ${PROJECT_SOURCE_DIR}/lib "
+        "gcovr -r ${PROJECT_SOURCE_DIR}/include "
         "--object-directory ${PROJECT_BINARY_DIR} "
         "--html-details ${PROJECT_SOURCE_DIR}/coverage/coverage.html")
 endif()
