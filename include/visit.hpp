@@ -21,26 +21,23 @@ Visit(Invocables...) -> Visit<Invocables...>;
 
 template<class... RightInvs>
 constexpr auto
-operator|(ID<>, Visit<RightInvs...>&& rightInvocable)
+operator|(ID<>, Visit<RightInvs...> rightInvocable)
 {
-    return ID{[rightInvocable = std::forward<Visit<RightInvs...>>(
-                       rightInvocable)](auto&& arg) {
+    return ID{[rightInvocable = std::move(rightInvocable)](auto&& arg) {
         return std::visit(rightInvocable, std::forward<decltype(arg)>(arg));
     }};
 }
 
 template<class... LeftInvs, class... RightInvs>
 constexpr auto
-operator|(ID<LeftInvs...>&& leftInvocable, Visit<RightInvs...>&& rightInvocable)
+operator|(ID<LeftInvs...> leftInvocable, Visit<RightInvs...> rightInvocable)
 {
-    return ID{
-            [rightInvocable = std::forward<Visit<RightInvs...>>(rightInvocable),
-             leftInvocable  = std::forward<ID<LeftInvs...>>(leftInvocable)](
-                    auto&&... args) {
-                return std::visit(
-                        rightInvocable,
-                        leftInvocable(std::forward<decltype(args)>(args)...));
-            }};
+    return ID{[leftInvocable  = std::move(leftInvocable),
+               rightInvocable = std::move(rightInvocable)](auto&&... args) {
+        return std::visit(
+                rightInvocable,
+                leftInvocable(std::forward<decltype(args)>(args)...));
+    }};
 }
 
 }    // namespace Barely

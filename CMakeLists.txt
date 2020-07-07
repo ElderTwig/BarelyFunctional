@@ -20,7 +20,6 @@ endif()
 
 option(CLANG_TIDY "Run clang-tidy on MandelLandscape" OFF)
 option(BUILD_TESTING OFF)
-option(BUILD_SHARED_LIBS OFF)
 
 #---------------------------Compilation database generation--------------------
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -60,8 +59,5 @@ add_subdirectory(lib)
 
 #---------------------------tests----------------------------------------------
 if(BUILD_TESTING)
-    option(COVERAGE "Run gcovr after testing" ON)
-    option(GCOVR_GEN_HTML "Generate html files from coverage" OFF)
-
     add_subdirectory(tests)
 endif()

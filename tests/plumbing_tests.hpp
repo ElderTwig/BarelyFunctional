@@ -5,20 +5,21 @@
 
 #include <catch2/catch.hpp>
 
-#include <iostream>
+#include <type_traits>
+#include <string_view>
 
 struct Counter {
     int copyConstructed = 0;
     int moveConstructed = 0;
 
-    Counter(Counter const& c) :
+    constexpr Counter(Counter const& c) :
                 copyConstructed(c.copyConstructed + 1),
                 moveConstructed(c.moveConstructed)
     {
         copyConstructed++;
     }
 
-    Counter(Counter&& c) :
+    constexpr Counter(Counter&& c) :
                 copyConstructed(c.copyConstructed),
                 moveConstructed(c.moveConstructed + 1)
     {}
@@ -29,7 +30,114 @@ struct Counter {
     Counter&
     operator=(Counter&&) = delete;
 
+    constexpr Counter() = default;
+
     ~Counter() = default;
 };
+
+TEST_CASE(
+        "ID::operator() is an identity function overload set "
+        "for the function objects it wraps",
+        "[ID][ID::operator()]")
+{
+    auto constexpr foo = [](int) -> std::string_view {
+        return "integer";
+    };
+    auto constexpr bar = [](double) -> std::string_view {
+        return "double";
+    };
+    auto constexpr fun = []() -> std::string_view {
+        return "nothing";
+    };
+    auto constexpr bun = [](auto) -> std::string_view {
+        return "deduced";
+    };
+
+    auto constexpr a = Barely::ID{foo, bar, fun, bun};
+    auto constexpr b = Barely::ID{bun, foo};
+    auto constexpr c = Barely::ID{bun};
+
+    STATIC_REQUIRE(a(5) == "integer");
+    STATIC_REQUIRE(a(5.0) == "double");
+    STATIC_REQUIRE(a() == "nothing");
+    STATIC_REQUIRE(a(true) == "deduced");
+
+    STATIC_REQUIRE(b(5) == "integer");
+    STATIC_REQUIRE(b(5.0) == "deduced");
+
+    STATIC_REQUIRE(c(2) == "deduced");
+}
+
+TEST_CASE(
+        "ID operator| composes left and right function objects",
+        "[ID][ID::operator|]")
+{
+    SECTION("An empty ID on the left constructs ID{right}")
+    {
+        auto constexpr foo = [i = 5] {
+            return i;
+        };
+
+        auto constexpr a = Barely::ID{} | foo;
+        auto constexpr b = Barely::ID{foo};
+
+        STATIC_REQUIRE(std::is_same_v<decltype(a), decltype(b)>);
+    }
+
+    auto constexpr foo = [](auto counter) {
+        return counter;
+    };
+
+    auto constexpr bar = [](auto const counter) {
+        return counter;
+    };
+
+    auto constexpr bun = [](auto&& counter) {
+        return std::forward<decltype(counter)>(counter);
+    };
+
+    auto constexpr idFoo       = Barely::ID{foo};
+    auto constexpr idFooBar    = idFoo | bar;
+    auto constexpr idFooBarBun = idFoo | bar | bun;
+
+    SECTION("Non-empty ID on the left constructs a callable "
+            "that forwards any arguments to the left invocable "
+            "and calls the right invocable with the result of "
+            "that expression")
+    {
+        STATIC_REQUIRE(idFoo(Counter{}).copyConstructed == 0);
+        STATIC_REQUIRE(idFoo(Counter{}).moveConstructed == 1);
+
+        STATIC_REQUIRE(idFooBar(Counter{}).copyConstructed == 2);
+        STATIC_REQUIRE(idFooBar(Counter{}).moveConstructed == 2);
+
+        STATIC_REQUIRE(idFooBarBun(Counter{}).copyConstructed == 2);
+        STATIC_REQUIRE(idFooBarBun(Counter{}).moveConstructed == 3);
+    }
+
+    SECTION("Anonymous lambdas compose the same as named lambdas "
+            "if they are closureless")
+    {
+        auto constexpr anonIdFooBarBun =
+                Barely::ID{[](auto counter) {
+                    return counter;
+                }}
+                |
+                [](auto const counter) {
+                    return counter;
+                }
+                | [](auto&& counter) {
+                      return std::forward<decltype(counter)>(counter);
+                  };
+
+        STATIC_REQUIRE(
+                idFooBarBun(Counter{}).copyConstructed
+                == anonIdFooBarBun(Counter{}).copyConstructed);
+
+        STATIC_REQUIRE(
+                idFooBarBun(Counter{}).moveConstructed
+                == anonIdFooBarBun(Counter{}).moveConstructed);
+    }
+}
 
 #endif    // BARELYFUNCTIONAL_PLUMBING_TESTS_HPP

@@ -20,10 +20,9 @@ Uncurry(Invocables...) -> Uncurry<Invocables...>;
 
 template<class... RightInvs>
 constexpr auto
-operator|(ID<>, Uncurry<RightInvs...>&& rightInvocable) noexcept
+operator|(ID<>, Uncurry<RightInvs...> rightInvocable) noexcept
 {
-    return ID{[rightInvocable = std::forward<Uncurry<RightInvs...>>(
-                       rightInvocable)](auto&& arg) {
+    return ID{[rightInvocable = std::move(rightInvocable)](auto&& arg) {
         return std::apply(rightInvocable, std::forward<decltype(arg)>(arg));
     }};
 }
@@ -31,13 +30,11 @@ operator|(ID<>, Uncurry<RightInvs...>&& rightInvocable) noexcept
 template<class... LeftInvs, class... RightInvs>
 constexpr auto
 operator|(
-        ID<LeftInvs...>&& leftInvocable,
-        Uncurry<RightInvs...>&& rightInvocable) noexcept
+        ID<LeftInvs...> leftInvocable,
+        Uncurry<RightInvs...> rightInvocable) noexcept
 {
-    return ID{[rightInvocable =
-                       std::forward<Uncurry<RightInvs...>>(rightInvocable),
-               leftInvocable = std::forward<ID<LeftInvs...>>(leftInvocable)](
-                      auto&&... args) {
+    return ID{[leftInvocable  = std::move(leftInvocable),
+               rightInvocable = std::move(rightInvocable)](auto&&... args) {
         return std::apply(
                 leftInvocable(std::forward<decltype(args)>(args)...),
                 rightInvocable);

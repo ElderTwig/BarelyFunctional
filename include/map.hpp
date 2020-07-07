@@ -93,10 +93,9 @@ Map(Invocables...) -> Map<Invocables...>;
 
 template<class... RightInvs>
 constexpr auto
-operator|(ID<>, Map<RightInvs...>&& rightInvocable) noexcept
+operator|(ID<>, Map<RightInvs...> rightInvocable) noexcept
 {
-    return ID{[rightInvocable = std::forward<Map<RightInvs...>>(
-                       rightInvocable)](auto&& arg) {
+    return ID{[rightInvocable = std::move(rightInvocable)](auto&& arg) {
         return map(std::forward<decltype(arg)>(arg), rightInvocable);
     }};
 }
@@ -104,12 +103,11 @@ operator|(ID<>, Map<RightInvs...>&& rightInvocable) noexcept
 template<class... LeftInvs, class... RightInvs>
 constexpr auto
 operator|(
-        ID<LeftInvs...>&& leftInvocable,
-        Map<RightInvs...>&& rightInvocable) noexcept
+        ID<LeftInvs...> leftInvocable,
+        Map<RightInvs...> rightInvocable) noexcept
 {
-    return ID{[rightInvocable = std::forward<Map<RightInvs...>>(rightInvocable),
-               leftInvocable  = std::forward<ID<LeftInvs...>>(leftInvocable)](
-                      auto&&... args) {
+    return ID{[leftInvocable  = std::move(leftInvocable),
+               rightInvocable = std::move(rightInvocable)](auto&&... args) {
         return map(
                 leftInvocable(std::forward<decltype(args)>(args)...),
                 rightInvocable);

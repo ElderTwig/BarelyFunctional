@@ -3,6 +3,7 @@
 
 #include "misc.hpp"
 
+#include <type_traits>
 #include <utility>
 
 namespace Barely {
@@ -17,20 +18,19 @@ ID(Invocables...) -> ID<Invocables...>;
 
 template<class RightInvocable>
 constexpr auto
-operator|(ID<>, RightInvocable&& rightInvocable) noexcept
+operator|(ID<>, RightInvocable rightInvocable) noexcept -> auto
 {
-    return ID{std::forward<RightInvocable>(rightInvocable)};
+    return ID{std::move(rightInvocable)};
 }
 
 template<class... LeftInvocable, class RightInvocable>
 constexpr auto
 operator|(
-        ID<LeftInvocable...>&& leftInvocable,
-        RightInvocable&& rightInvocable) noexcept
+        ID<LeftInvocable...> leftInvocable,
+        RightInvocable rightInvocable) noexcept
 {
-    return ID{[rightInvocable = std::forward<RightInvocable>(rightInvocable),
-               leftInvocable  = std::forward<ID<LeftInvocable...>>(
-                       leftInvocable)](auto&&... args) {
+    return ID{[leftInvocable  = std::move(leftInvocable),
+               rightInvocable = std::move(rightInvocable)](auto&&... args) {
         return rightInvocable(
                 leftInvocable(std::forward<decltype(args)>(args)...));
     }};
