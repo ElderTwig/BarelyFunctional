@@ -55,7 +55,12 @@ if(BUILD_TESTING)
 endif()
 
 #---------------------------Barely::Functional--------------------------------------
-add_subdirectory(lib)
+add_library(BarelyFunctional INTERFACE)
+
+target_include_directories(BarelyFunctional
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_library(Barely::Functional ALIAS BarelyFunctional)
 
 #---------------------------tests----------------------------------------------
 if(BUILD_TESTING)
