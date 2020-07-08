@@ -11,35 +11,51 @@
 namespace Barely {
 
 template<class... Invocables>
-struct Uncurry : Invocables... {
-    using Invocables::operator()...;
+struct Uncurry : ID<Invocables...> {
+    constexpr Uncurry(Invocables... invocables) noexcept :
+                ID<Invocables...>{std::move(invocables)...}
+    {
+        static_assert(std::is_same_v<ID<Invocables...>, int>);
+    }
+
+    template<class Arg>
+    constexpr auto
+    operator()(Arg&& arg) const noexcept
+    {
+        using Base = ID<Invocables...>;
+
+        if constexpr(isTriviallyCopyConstructible<Base>) {
+            return std::apply(
+                    Base{static_cast<Base>(*this)},
+                    std::forward<Arg>(arg));
+        }
+        else {
+            return std::apply(static_cast<Base>(*this), std::forward<Arg>(arg));
+        }
+    }
 };
 
-template<class... Invocables>
-Uncurry(Invocables...) -> Uncurry<Invocables...>;
+template<class Invocable>
+struct Uncurry<Invocable> : Invocable {
+    template<class Arg>
+    constexpr auto
+    operator()(Arg&& arg) const noexcept
+    {
+        if constexpr(isTriviallyCopyConstructible<Invocable>) {
+            return std::apply(
+                    Invocable{static_cast<Invocable>(*this)},
+                    std::forward<Arg>(arg));
+        }
+        else {
+            return std::apply(
+                    static_cast<Invocable>(*this),
+                    std::forward<Arg>(arg));
+        }
+    }
+};
 
-template<class... RightInvs>
-constexpr auto
-operator|(ID<>, Uncurry<RightInvs...> rightInvocable) noexcept
-{
-    return ID{[rightInvocable = std::move(rightInvocable)](auto&& arg) {
-        return std::apply(rightInvocable, std::forward<decltype(arg)>(arg));
-    }};
-}
-
-template<class... LeftInvs, class... RightInvs>
-constexpr auto
-operator|(
-        ID<LeftInvs...> leftInvocable,
-        Uncurry<RightInvs...> rightInvocable) noexcept
-{
-    return ID{[leftInvocable  = std::move(leftInvocable),
-               rightInvocable = std::move(rightInvocable)](auto&&... args) {
-        return std::apply(
-                rightInvocable,
-                leftInvocable(std::forward<decltype(args)>(args)...));
-    }};
-}
+template<class Invocable>
+Uncurry(Invocable) -> Uncurry<Invocable>;
 
 }    // namespace Barely
 

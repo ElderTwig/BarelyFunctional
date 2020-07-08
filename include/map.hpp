@@ -11,9 +11,9 @@
 
 namespace Barely {
 
-template<class T, class Invocable>
+template<class Invocable, class T>
 constexpr auto
-map(std::optional<T> const& optional, CopyIfTrivial_t<Invocable> invocable)
+map(Invocable&& invocable, std::optional<T> const& optional)
 {
     using InvReturnT = std::invoke_result_t<Invocable, T>;
 
@@ -33,9 +33,9 @@ map(std::optional<T> const& optional, CopyIfTrivial_t<Invocable> invocable)
     }
 }
 
-template<class T, class Invocable>
+template<class Invocable, class T>
 constexpr auto
-map(std::optional<T>&& optional, CopyIfTrivial_t<Invocable> invocable)
+map(Invocable&& invocable, std::optional<T>&& optional)
 {
     using InvReturnT = std::invoke_result_t<Invocable, T>;
 
@@ -55,9 +55,9 @@ map(std::optional<T>&& optional, CopyIfTrivial_t<Invocable> invocable)
     }
 }
 
-template<class T, size_t length, class Invocable>
+template<class Invocable, class T, size_t length>
 constexpr auto
-map(std::array<T, length> const& array, CopyIfTrivial_t<Invocable> invocable)
+map(Invocable&& invocable, std::array<T, length> const& array)
 {
     using ReturnT = decltype(invocable(array[0]));
     auto newArray = std::array<ReturnT, length>{};
@@ -69,9 +69,9 @@ map(std::array<T, length> const& array, CopyIfTrivial_t<Invocable> invocable)
     return newArray;
 }
 
-template<class T, size_t length, class Invocable>
+template<class Invocable, class T, size_t length>
 constexpr auto
-map(std::array<T, length>&& array, CopyIfTrivial_t<Invocable> invocable)
+map(Invocable&& invocable, std::array<T, length>&& array)
 {
     using ReturnT = decltype(invocable(array[0]));
     auto newArray = std::array<ReturnT, length>{};
@@ -84,35 +84,45 @@ map(std::array<T, length>&& array, CopyIfTrivial_t<Invocable> invocable)
 }
 
 template<class... Invocables>
-struct Map : Invocables... {
-    using Invocables ::operator()...;
+struct Map : ID<Invocables...> {
+    constexpr Map(Invocables... invocables) noexcept :
+                ID<Invocables...>{std::move(invocables)...}
+    {}
+
+    template<class Arg>
+    constexpr auto
+    operator()(Arg&& arg) const noexcept
+    {
+        using Base = ID<Invocables...>;
+
+        if constexpr(isTriviallyCopyConstructible<Base>) {
+            return map(Base{static_cast<Base>(*this)}, std::forward<Arg>(arg));
+        }
+        else {
+            return map(static_cast<Base>(*this), std::forward<Arg>(arg));
+        }
+    }
 };
 
-template<class... Invocables>
-Map(Invocables...) -> Map<Invocables...>;
+template<class Invocable>
+struct Map<Invocable> : Invocable {
+    template<class Arg>
+    constexpr auto
+    operator()(Arg&& arg) const noexcept
+    {
+        if constexpr(isTriviallyCopyConstructible<Invocable>) {
+            return map(
+                    Invocable{static_cast<Invocable>(*this)},
+                    std::forward<Arg>(arg));
+        }
+        else {
+            return map(static_cast<Invocable>(*this), std::forward<Arg>(arg));
+        }
+    }
+};
 
-template<class... RightInvs>
-constexpr auto
-operator|(ID<>, Map<RightInvs...> rightInvocable) noexcept
-{
-    return ID{[rightInvocable = std::move(rightInvocable)](auto&& arg) {
-        return map(std::forward<decltype(arg)>(arg), rightInvocable);
-    }};
-}
-
-template<class... LeftInvs, class... RightInvs>
-constexpr auto
-operator|(
-        ID<LeftInvs...> leftInvocable,
-        Map<RightInvs...> rightInvocable) noexcept
-{
-    return ID{[leftInvocable  = std::move(leftInvocable),
-               rightInvocable = std::move(rightInvocable)](auto&&... args) {
-        return map(
-                leftInvocable(std::forward<decltype(args)>(args)...),
-                rightInvocable);
-    }};
-}
+template<class Invocable>
+Map(Invocable) -> Map<Invocable>;
 
 }    // namespace Barely
 

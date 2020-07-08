@@ -12,33 +12,51 @@
 namespace Barely {
 
 template<class... Invocables>
-struct Visit : Invocables... {
-    using Invocables::operator()...;
+struct Visit : ID<Invocables...> {
+    constexpr Visit(Invocables... invocables) noexcept :
+                ID<Invocables...>{std::move(invocables)...}
+    {
+        static_assert(std::is_same_v<ID<Invocables...>, int>);
+    }
+
+    template<class Arg>
+    constexpr auto
+    operator()(Arg&& arg) const noexcept
+    {
+        using Base = ID<Invocables...>;
+
+        if constexpr(isTriviallyCopyConstructible<Base>) {
+            return std::visit(
+                    Base{static_cast<Base>(*this)},
+                    std::forward<Arg>(arg));
+        }
+        else {
+            return std::visit(static_cast<Base>(*this), std::forward<Arg>(arg));
+        }
+    }
 };
 
-template<class... Invocables>
-Visit(Invocables...) -> Visit<Invocables...>;
+template<class Invocable>
+struct Visit<Invocable> : Invocable {
+    template<class Arg>
+    constexpr auto
+    operator()(Arg&& arg) const noexcept
+    {
+        if constexpr(isTriviallyCopyConstructible<Invocable>) {
+            return std::visit(
+                    Invocable{static_cast<Invocable>(*this)},
+                    std::forward<Arg>(arg));
+        }
+        else {
+            return std::visit(
+                    static_cast<Invocable>(*this),
+                    std::forward<Arg>(arg));
+        }
+    }
+};
 
-template<class... RightInvs>
-constexpr auto
-operator|(ID<>, Visit<RightInvs...> rightInvocable)
-{
-    return ID{[rightInvocable = std::move(rightInvocable)](auto&& arg) {
-        return std::visit(rightInvocable, std::forward<decltype(arg)>(arg));
-    }};
-}
-
-template<class... LeftInvs, class... RightInvs>
-constexpr auto
-operator|(ID<LeftInvs...> leftInvocable, Visit<RightInvs...> rightInvocable)
-{
-    return ID{[leftInvocable  = std::move(leftInvocable),
-               rightInvocable = std::move(rightInvocable)](auto&&... args) {
-        return std::visit(
-                rightInvocable,
-                leftInvocable(std::forward<decltype(args)>(args)...));
-    }};
-}
+template<class Invocable>
+Visit(Invocable) -> Visit<Invocable>;
 
 }    // namespace Barely
 

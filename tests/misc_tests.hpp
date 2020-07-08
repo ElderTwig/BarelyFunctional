@@ -47,6 +47,7 @@ TEST_CASE(
     };
 
     static_assert(std::is_trivially_copy_constructible_v<Trivial>);
+    STATIC_REQUIRE(Barely::isTriviallyCopyConstructible<Trivial>);
 
     struct NonTrivial {
         NonTrivial(NonTrivial const&)
@@ -66,10 +67,7 @@ TEST_CASE(
     };
 
     static_assert(!std::is_trivially_copy_constructible_v<NonTrivial>);
-
-    STATIC_REQUIRE(std::is_same_v<Barely::CopyIfTrivial_t<Trivial>, Trivial>);
-    STATIC_REQUIRE(
-            std::is_same_v<Barely::CopyIfTrivial_t<NonTrivial>, NonTrivial&>);
+    STATIC_REQUIRE(!Barely::isTriviallyCopyConstructible<NonTrivial>);
 }
 
 #endif    // BARELYFUNCTIONAL_MISC_TESTS_HPP

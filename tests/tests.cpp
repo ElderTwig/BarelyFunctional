@@ -3,3 +3,4 @@
 
 #include "misc_tests.hpp"
 #include "plumbing_tests.hpp"
+#include "map_tests.hpp"

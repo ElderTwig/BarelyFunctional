@@ -23,20 +23,17 @@ template<class Optional>
 auto constexpr isOptional = IsOptional<Optional>::value;
 
 template<class T, class = void>
-struct CopyIfTrivial {
-    using type = std::remove_reference_t<T>&;
-};
+struct IsTriviallyCopyConstructible : std::false_type {};
 
 template<class T>
-struct CopyIfTrivial<
+struct IsTriviallyCopyConstructible<
         T,
         std::enable_if_t<std::is_trivially_copy_constructible_v<
-                std::remove_reference_t<T>>>> {
-    using type = std::remove_reference_t<T>;
-};
+                std::remove_reference_t<T>>>> : std::true_type {};
 
 template<class T>
-using CopyIfTrivial_t = typename CopyIfTrivial<T>::type;
+auto constexpr isTriviallyCopyConstructible =
+        IsTriviallyCopyConstructible<T>::value;
 
 }    // namespace Barely
 
