@@ -7,9 +7,10 @@
 #include <catch2/catch.hpp>
 
 TEST_CASE(
-        "ID::operator() is an identity function overload set "
-        "for the function objects it wraps",
-        "[ID][ID::operator()]")
+        "ID operator| Map{function object} models "
+        "Map :: (a -> b) -> map a -> map b, "
+        "where a -> b is the function object",
+        "[Map]")
 {
     auto constexpr foo = [](int) -> std::string_view {
         return "integer";
