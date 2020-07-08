@@ -22,6 +22,22 @@ using IsOptional = IsSpecialisationOf<std::optional, Optional>;
 template<class Optional>
 auto constexpr isOptional = IsOptional<Optional>::value;
 
+template<class T, class = void>
+struct CopyIfTrivial {
+    using type = std::remove_reference_t<T>&;
+};
+
+template<class T>
+struct CopyIfTrivial<
+        T,
+        std::enable_if_t<std::is_trivially_copy_constructible_v<
+                std::remove_reference_t<T>>>> {
+    using type = std::remove_reference_t<T>;
+};
+
+template<class T>
+using CopyIfTrivial_t = typename CopyIfTrivial<T>::type;
+
 }    // namespace Barely
 
 #endif    // BARELYFUNCTIONAL_MISC_HPP

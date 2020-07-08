@@ -36,8 +36,8 @@ operator|(
     return ID{[leftInvocable  = std::move(leftInvocable),
                rightInvocable = std::move(rightInvocable)](auto&&... args) {
         return std::apply(
-                leftInvocable(std::forward<decltype(args)>(args)...),
-                rightInvocable);
+                rightInvocable,
+                leftInvocable(std::forward<decltype(args)>(args)...));
     }};
 }
 

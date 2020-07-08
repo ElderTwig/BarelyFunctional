@@ -13,7 +13,7 @@ namespace Barely {
 
 template<class T, class Invocable>
 constexpr auto
-map(std::optional<T> const& optional, Invocable&& invocable)
+map(std::optional<T> const& optional, CopyIfTrivial_t<Invocable> invocable)
 {
     using InvReturnT = std::invoke_result_t<Invocable, T>;
 
@@ -35,7 +35,7 @@ map(std::optional<T> const& optional, Invocable&& invocable)
 
 template<class T, class Invocable>
 constexpr auto
-map(std::optional<T>&& optional, Invocable&& invocable)
+map(std::optional<T>&& optional, CopyIfTrivial_t<Invocable> invocable)
 {
     using InvReturnT = std::invoke_result_t<Invocable, T>;
 
@@ -57,7 +57,7 @@ map(std::optional<T>&& optional, Invocable&& invocable)
 
 template<class T, size_t length, class Invocable>
 constexpr auto
-map(std::array<T, length> const& array, Invocable&& invocable)
+map(std::array<T, length> const& array, CopyIfTrivial_t<Invocable> invocable)
 {
     using ReturnT = decltype(invocable(array[0]));
     auto newArray = std::array<ReturnT, length>{};
@@ -71,7 +71,7 @@ map(std::array<T, length> const& array, Invocable&& invocable)
 
 template<class T, size_t length, class Invocable>
 constexpr auto
-map(std::array<T, length>&& array, Invocable&& invocable)
+map(std::array<T, length>&& array, CopyIfTrivial_t<Invocable> invocable)
 {
     using ReturnT = decltype(invocable(array[0]));
     auto newArray = std::array<ReturnT, length>{};

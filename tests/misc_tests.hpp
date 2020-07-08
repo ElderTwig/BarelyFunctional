@@ -37,4 +37,39 @@ TEST_CASE(
     }
 }
 
+TEST_CASE(
+        "CopyIfTrivial_t is T or T& depending on if "
+        "T is trivially copy constructible",
+        "[CopyIfTrivial][CopyIfTrivial_t]")
+{
+    struct Trivial {
+        int a;
+    };
+
+    static_assert(std::is_trivially_copy_constructible_v<Trivial>);
+
+    struct NonTrivial {
+        NonTrivial(NonTrivial const&)
+        {
+            auto* p = new int;
+            delete p;
+        }
+
+        NonTrivial(NonTrivial&&) = default;
+
+        NonTrivial&
+        operator=(NonTrivial const&) = default;
+        NonTrivial&
+        operator=(NonTrivial&&) = default;
+
+        ~NonTrivial() = default;
+    };
+
+    static_assert(!std::is_trivially_copy_constructible_v<NonTrivial>);
+
+    STATIC_REQUIRE(std::is_same_v<Barely::CopyIfTrivial_t<Trivial>, Trivial>);
+    STATIC_REQUIRE(
+            std::is_same_v<Barely::CopyIfTrivial_t<NonTrivial>, NonTrivial&>);
+}
+
 #endif    // BARELYFUNCTIONAL_MISC_TESTS_HPP

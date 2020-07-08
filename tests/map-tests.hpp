@@ -1,13 +1,10 @@
-#ifndef BARELYFUNCTIONAL_PLUMBING_TESTS_HPP
-#define BARELYFUNCTIONAL_PLUMBING_TESTS_HPP
+#ifndef BARELYFUNCTIONAL_MAP_TESTS_HPP
+#define BARELYFUNCTIONAL_MAP_TESTS_HPP
 
-#include "plumbing.hpp"
+#include "map.hpp"
 #include "testUtils.hpp"
 
 #include <catch2/catch.hpp>
-
-#include <type_traits>
-#include <string_view>
 
 TEST_CASE(
         "ID::operator() is an identity function overload set "
@@ -114,4 +111,4 @@ TEST_CASE(
     }
 }
 
-#endif    // BARELYFUNCTIONAL_PLUMBING_TESTS_HPP
+#endif    // BARELYFUNCTIONAL_MAP_TESTS_HPP
