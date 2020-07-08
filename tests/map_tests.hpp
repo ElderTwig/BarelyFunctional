@@ -2,11 +2,9 @@
 #define BARELYFUNCTIONAL_MAP_TESTS_HPP
 
 #include "map.hpp"
-#include "testUtils.hpp"
 
 #include <catch2/catch.hpp>
 
-#include <optional>
 #include <string_view>
 
 TEST_CASE("map models ((a -> b), [a]) -> [b]", "[map]")
