@@ -1,6 +1,6 @@
 
-#ifndef BARELYFUNCTIONAL_UNCURRY_HPP
-#define BARELYFUNCTIONAL_UNCURRY_HPP
+#ifndef BARELYFUNCTIONAL_VISIT_HPP
+#define BARELYFUNCTIONAL_VISIT_HPP
 
 #include "misc.hpp"
 #include "plumbing.hpp"
@@ -15,9 +15,7 @@ template<class... Invocables>
 struct Visit : ID<Invocables...> {
     constexpr Visit(Invocables... invocables) noexcept :
                 ID<Invocables...>{std::move(invocables)...}
-    {
-        static_assert(std::is_same_v<ID<Invocables...>, int>);
-    }
+    {}
 
     template<class Arg>
     constexpr auto
@@ -60,4 +58,4 @@ Visit(Invocable) -> Visit<Invocable>;
 
 }    // namespace Barely
 
-#endif    // BARELYFUNCTIONAL_UNCURRY_HPP
+#endif    // BARELYFUNCTIONAL_VISIT_HPP
