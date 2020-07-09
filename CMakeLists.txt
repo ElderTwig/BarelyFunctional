@@ -4,10 +4,6 @@ cmake_policy(SET CMP0091 NEW)
 
 project(BarelyFunctional LANGUAGES CXX)
 
-if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
-endif()
-
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -18,8 +14,8 @@ if(NOT CMAKE_BUILD_TYPE)
         STRING "Sets the configuration to build (Release, Debug, etc...)")
 endif()
 
-option(CLANG_TIDY "Run clang-tidy on MandelLandscape" OFF)
-option(BUILD_TESTING OFF)
+option(CLANG_TIDY "Run clang-tidy on tests" OFF)
+option(BARELY_BUILD_TESTING OFF)
 
 #---------------------------Compilation database generation--------------------
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -32,9 +28,9 @@ configure_file(${CMAKE_BINARY_DIR}/compile_commands.json
     COPYONLY)
 
 #---------------------------git submodule setup--------------------------------
-option(UPDATE_SUBMODULES "Update git submodules before configuration" ON)
+option(BARELY_UPDATE_SUBMODULES "Update git submodules before configuration" ON)
 
-if(UPDATE_SUBMODULES)
+if(BARELY_UPDATE_SUBMODULES)
   include(UpdateSubmodules)
 endif()
 
@@ -46,7 +42,7 @@ if(CCACHE_PROGRAM)
 endif()
 
 #---------------------------Catch2---------------------------------------------
-if(BUILD_TESTING)
+if(BARELY_BUILD_TESTING)
     find_package(Catch2 QUIET)
 
     if(NOT Catch2_FOUND)
@@ -63,6 +59,6 @@ target_include_directories(BarelyFunctional
 add_library(Barely::Functional ALIAS BarelyFunctional)
 
 #---------------------------tests----------------------------------------------
-if(BUILD_TESTING)
+if(BARELY_BUILD_TESTING)
     add_subdirectory(tests)
 endif()
