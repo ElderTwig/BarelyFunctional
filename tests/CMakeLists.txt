@@ -12,7 +12,7 @@ target_link_libraries(tests
     PRIVATE Catch2::Catch2
     PRIVATE Barely::Functional)
 
-if(CLANG_TIDY)
+if(BARELY_CLANG_TIDY)
     set_target_properties(tests PROPERTIES
         CXX_CLANG_TIDY "clang-tidy;--use-color")
 endif()
