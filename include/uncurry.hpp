@@ -14,9 +14,7 @@ template<class... Invocables>
 struct Uncurry : ID<Invocables...> {
     constexpr Uncurry(Invocables... invocables) noexcept :
                 ID<Invocables...>{std::move(invocables)...}
-    {
-        static_assert(std::is_same_v<ID<Invocables...>, int>);
-    }
+    {}
 
     template<class Arg>
     constexpr auto
