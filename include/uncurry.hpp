@@ -8,53 +8,26 @@
 #include <utility>
 #include <tuple>
 
-namespace Barely {
+namespace Brly {
 
 template<class... Invocables>
-struct Uncurry : ID<Invocables...> {
-    constexpr Uncurry(Invocables... invocables) noexcept :
-                ID<Invocables...>{std::move(invocables)...}
-    {}
+constexpr auto
+uncurry(Invocables... invocables) noexcept
+{
+    return ID{[invocable = ID{std::move(invocables)...}](auto&& arg) {
+        using Invocable = decltype(invocable);
 
-    template<class Arg>
-    constexpr auto
-    operator()(Arg&& arg) const noexcept
-    {
-        using Base = ID<Invocables...>;
-
-        if constexpr(isTriviallyCopyConstructible<Base>) {
-            return std::apply(
-                    Base{static_cast<Base>(*this)},
-                    std::forward<Arg>(arg));
-        }
-        else {
-            return std::apply(static_cast<Base>(*this), std::forward<Arg>(arg));
-        }
-    }
-};
-
-template<class Invocable>
-struct Uncurry<Invocable> : Invocable {
-    template<class Arg>
-    constexpr auto
-    operator()(Arg&& arg) const noexcept
-    {
         if constexpr(isTriviallyCopyConstructible<Invocable>) {
             return std::apply(
-                    Invocable{static_cast<Invocable>(*this)},
-                    std::forward<Arg>(arg));
+                    Invocable{invocable},
+                    std::forward<decltype(arg)>(arg));
         }
         else {
-            return std::apply(
-                    static_cast<Invocable>(*this),
-                    std::forward<Arg>(arg));
+            return std::apply(invocable, std::forward<decltype(arg)>(arg));
         }
-    }
-};
+    }};
+}
 
-template<class Invocable>
-Uncurry(Invocable) -> Uncurry<Invocable>;
-
-}    // namespace Barely
+}    // namespace Brly
 
 #endif    // BARELYFUNCTIONAL_UNCURRY_HPP

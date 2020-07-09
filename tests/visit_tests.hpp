@@ -8,16 +8,14 @@
 #include <string_view>
 
 TEST_CASE(
-        "Visit{overload set} models "
-        "Visit :: (a -> b -> c... -> n) -> (a, b, c...) -> n",
+        "visit(overload set) models "
+        "visit :: (a | b | c... -> common) -> std::variant<a, b, c...> -> common",
         "[Visit]")
 {
-    auto constexpr visit = Barely::Visit{
+    auto constexpr visit = Brly::visit(
             [](int) -> std::string_view { return "int"; },
             [](double) -> std::string_view { return "double"; },
-            [](auto) -> std::string_view {
-                return "deduced";
-            }};
+            [](auto) -> std::string_view { return "deduced"; });
 
     struct AType {};
 

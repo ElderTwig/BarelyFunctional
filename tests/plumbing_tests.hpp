@@ -27,9 +27,9 @@ TEST_CASE(
         return "deduced";
     };
 
-    auto constexpr a = Barely::ID{foo, bar, fun, bun};
-    auto constexpr b = Barely::ID{bun, foo};
-    auto constexpr c = Barely::ID{bun};
+    auto constexpr a = Brly::ID{foo, bar, fun, bun};
+    auto constexpr b = Brly::ID{bun, foo};
+    auto constexpr c = Brly::ID{bun};
 
     STATIC_REQUIRE(a(5) == "integer");
     STATIC_REQUIRE(a(5.0) == "double");
@@ -52,8 +52,8 @@ TEST_CASE(
             return i;
         };
 
-        auto constexpr a = Barely::ID{} | foo;
-        auto constexpr b = Barely::ID{foo};
+        auto constexpr a = Brly::ID{} | foo;
+        auto constexpr b = Brly::ID{foo};
 
         STATIC_REQUIRE(std::is_same_v<decltype(a), decltype(b)>);
     }
@@ -70,7 +70,7 @@ TEST_CASE(
         return std::forward<decltype(counter)>(counter);
     };
 
-    auto constexpr idFoo       = Barely::ID{foo};
+    auto constexpr idFoo       = Brly::ID{foo};
     auto constexpr idFooBar    = idFoo | bar;
     auto constexpr idFooBarBun = idFoo | bar | bun;
 
@@ -93,7 +93,7 @@ TEST_CASE(
             "if they are closureless")
     {
         auto constexpr anonIdFooBarBun =
-                Barely::ID{[](auto counter) {
+                Brly::ID{[](auto counter) {
                     return counter;
                 }}
                 |

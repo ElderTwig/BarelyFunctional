@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace Barely {
+namespace Brly {
 
 template<class... Invocables>
 struct ID : Invocables... {
@@ -36,6 +36,6 @@ operator|(
     }};
 }
 
-}    // namespace Barely
+}    // namespace Brly
 
 #endif    // BARELYFUNCTIONAL_PACK_HPP

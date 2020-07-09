@@ -9,55 +9,37 @@
 #include <utility>
 #include <array>
 
-namespace Barely {
+namespace Brly {
 
 template<class Invocable, class T>
 constexpr auto
-map(Invocable&& invocable, std::optional<T> const& optional)
+mapImpl(Invocable&& invocable, std::optional<T> const& optional)
 {
-    using InvReturnT = std::invoke_result_t<Invocable, T>;
+    using ReturnT = RemoveOptional_t<decltype(invocable(*optional))>;
 
-    if constexpr(isOptional<InvReturnT>) {
-        if(optional.has_value()) {
-            return invocable(*optional);
-        }
-        return InvReturnT{std::nullopt};
+    if(optional.has_value()) {
+        return std::optional<ReturnT>{invocable(*optional)};
     }
-    else {
-        if(optional.has_value()) {
-            return std::optional<InvReturnT>{
-                    std::in_place,
-                    invocable(*optional)};
-        }
-        return std::optional<InvReturnT>{std::nullopt};
-    }
+
+    return std::optional<ReturnT>{std::nullopt};
 }
 
 template<class Invocable, class T>
 constexpr auto
-map(Invocable&& invocable, std::optional<T>&& optional)
+mapImpl(Invocable&& invocable, std::optional<T>&& optional)
 {
-    using InvReturnT = std::invoke_result_t<Invocable, T>;
+    using ReturnT = RemoveOptional_t<decltype(invocable(*optional))>;
 
-    if constexpr(isOptional<InvReturnT>) {
-        if(optional.has_value()) {
-            return invocable(*optional);
-        }
-        return InvReturnT{std::nullopt};
+    if(optional.has_value()) {
+        return std::optional<ReturnT>{invocable(*optional)};
     }
-    else {
-        if(optional.has_value()) {
-            return std::optional<InvReturnT>{
-                    std::in_place,
-                    invocable(*optional)};
-        }
-        return std::optional<InvReturnT>{std::nullopt};
-    }
+
+    return std::optional<ReturnT>{std::nullopt};
 }
 
 template<class Invocable, class T, size_t length>
 constexpr auto
-map(Invocable&& invocable, std::array<T, length> const& array)
+mapImpl(Invocable&& invocable, std::array<T, length> const& array)
 {
     using ReturnT = decltype(invocable(array[0]));
     auto newArray = std::array<ReturnT, length>{};
@@ -71,7 +53,7 @@ map(Invocable&& invocable, std::array<T, length> const& array)
 
 template<class Invocable, class T, size_t length>
 constexpr auto
-map(Invocable&& invocable, std::array<T, length>&& array)
+mapImpl(Invocable&& invocable, std::array<T, length>&& array)
 {
     using ReturnT = decltype(invocable(array[0]));
     auto newArray = std::array<ReturnT, length>{};
@@ -84,46 +66,23 @@ map(Invocable&& invocable, std::array<T, length>&& array)
 }
 
 template<class... Invocables>
-struct Map : ID<Invocables...> {
-    constexpr Map(Invocables... invocables) noexcept :
-                ID<Invocables...>{std::move(invocables)...}
-    {}
+constexpr auto
+map(Invocables... invocables) noexcept
+{
+    return ID{[invocable = ID{std::move(invocables)...}](auto&& arg) {
+        using Invocable = decltype(invocable);
 
-    template<class Arg>
-    constexpr auto
-    operator()(Arg&& arg) const noexcept
-    {
-        using Base = ID<Invocables...>;
-
-        if constexpr(isTriviallyCopyConstructible<Base>) {
-            return map(Base{static_cast<Base>(*this)}, std::forward<Arg>(arg));
-        }
-        else {
-            return map(static_cast<Base>(*this), std::forward<Arg>(arg));
-        }
-    }
-};
-
-template<class Invocable>
-struct Map<Invocable> : Invocable {
-    template<class Arg>
-    constexpr auto
-    operator()(Arg&& arg) const noexcept
-    {
         if constexpr(isTriviallyCopyConstructible<Invocable>) {
-            return map(
-                    Invocable{static_cast<Invocable>(*this)},
-                    std::forward<Arg>(arg));
+            return mapImpl(
+                    Invocable{invocable},
+                    std::forward<decltype(arg)>(arg));
         }
         else {
-            return map(static_cast<Invocable>(*this), std::forward<Arg>(arg));
+            return mapImpl(invocable, std::forward<decltype(arg)>(arg));
         }
-    }
-};
+    }};
+}
 
-template<class Invocable>
-Map(Invocable) -> Map<Invocable>;
-
-}    // namespace Barely
+}    // namespace Brly
 
 #endif    // BARELYFUNCTIONAL_MAP_HPP

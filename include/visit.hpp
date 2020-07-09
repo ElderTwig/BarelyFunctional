@@ -1,4 +1,3 @@
-
 #ifndef BARELYFUNCTIONAL_VISIT_HPP
 #define BARELYFUNCTIONAL_VISIT_HPP
 
@@ -9,53 +8,26 @@
 #include <utility>
 #include <variant>
 
-namespace Barely {
+namespace Brly {
 
 template<class... Invocables>
-struct Visit : ID<Invocables...> {
-    constexpr Visit(Invocables... invocables) noexcept :
-                ID<Invocables...>{std::move(invocables)...}
-    {}
+constexpr auto
+visit(Invocables... invocables) noexcept
+{
+    return ID{[invocable = ID{std::move(invocables)...}](auto&& arg) {
+        using Invocable = decltype(invocable);
 
-    template<class Arg>
-    constexpr auto
-    operator()(Arg&& arg) const noexcept
-    {
-        using Base = ID<Invocables...>;
-
-        if constexpr(isTriviallyCopyConstructible<Base>) {
-            return std::visit(
-                    Base{static_cast<Base>(*this)},
-                    std::forward<Arg>(arg));
-        }
-        else {
-            return std::visit(static_cast<Base>(*this), std::forward<Arg>(arg));
-        }
-    }
-};
-
-template<class Invocable>
-struct Visit<Invocable> : Invocable {
-    template<class Arg>
-    constexpr auto
-    operator()(Arg&& arg) const noexcept
-    {
         if constexpr(isTriviallyCopyConstructible<Invocable>) {
             return std::visit(
-                    Invocable{static_cast<Invocable>(*this)},
-                    std::forward<Arg>(arg));
+                    Invocable{invocable},
+                    std::forward<decltype(arg)>(arg));
         }
         else {
-            return std::visit(
-                    static_cast<Invocable>(*this),
-                    std::forward<Arg>(arg));
+            return std::visit(invocable, std::forward<decltype(arg)>(arg));
         }
-    }
-};
+    }};
+}
 
-template<class Invocable>
-Visit(Invocable) -> Visit<Invocable>;
-
-}    // namespace Barely
+}    // namespace Brly
 
 #endif    // BARELYFUNCTIONAL_VISIT_HPP

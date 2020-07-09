@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <optional>
 
-namespace Barely {
+namespace Brly {
 
 template<template<class...> class Template, class Specialisation>
 struct IsSpecialisationOf : std::false_type {};
@@ -35,6 +35,19 @@ template<class T>
 auto constexpr isTriviallyCopyConstructible =
         IsTriviallyCopyConstructible<T>::value;
 
-}    // namespace Barely
+template<class T>
+struct RemoveOptional {
+    using type = T;
+};
+
+template<class T>
+struct RemoveOptional<std::optional<T>> {
+    using type = std::remove_reference_t<T>;
+};
+
+template<class T>
+using RemoveOptional_t = typename RemoveOptional<T>::type;
+
+}    // namespace Brly
 
 #endif    // BARELYFUNCTIONAL_MISC_HPP

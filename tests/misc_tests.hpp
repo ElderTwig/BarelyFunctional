@@ -17,11 +17,11 @@ TEST_CASE(
     SECTION("IsSpecialisationOf::value is true if second argument "
             "is a template specialisation of the first")
     {
-        STATIC_REQUIRE(Barely::isSpecialisationOf<
+        STATIC_REQUIRE(Brly::isSpecialisationOf<
                        std::is_same,
                        std::is_same<AType, AType>>);
 
-        STATIC_REQUIRE_FALSE(Barely::isSpecialisationOf<
+        STATIC_REQUIRE_FALSE(Brly::isSpecialisationOf<
                              std::invoke_result,
                              std::is_trivial<AType>>);
     }
@@ -29,11 +29,11 @@ TEST_CASE(
     SECTION("IsOptional::value is true if argument is a "
             "template specialisation of std::optional")
     {
-        STATIC_REQUIRE(Barely::isOptional<std::optional<AType>>);
+        STATIC_REQUIRE(Brly::isOptional<std::optional<AType>>);
 
-        STATIC_REQUIRE_FALSE(Barely::isOptional<AType>);
+        STATIC_REQUIRE_FALSE(Brly::isOptional<AType>);
 
-        STATIC_REQUIRE_FALSE(Barely::isOptional<std::is_trivial<AType>>);
+        STATIC_REQUIRE_FALSE(Brly::isOptional<std::is_trivial<AType>>);
     }
 }
 
@@ -47,7 +47,7 @@ TEST_CASE(
     };
 
     static_assert(std::is_trivially_copy_constructible_v<Trivial>);
-    STATIC_REQUIRE(Barely::isTriviallyCopyConstructible<Trivial>);
+    STATIC_REQUIRE(Brly::isTriviallyCopyConstructible<Trivial>);
 
     struct NonTrivial {
         NonTrivial(NonTrivial const&)
@@ -67,7 +67,7 @@ TEST_CASE(
     };
 
     static_assert(!std::is_trivially_copy_constructible_v<NonTrivial>);
-    STATIC_REQUIRE(!Barely::isTriviallyCopyConstructible<NonTrivial>);
+    STATIC_REQUIRE(!Brly::isTriviallyCopyConstructible<NonTrivial>);
 }
 
 #endif    // BARELYFUNCTIONAL_MISC_TESTS_HPP
